@@ -1,18 +1,17 @@
 package com.example.collections;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public final class User {
 
     private final String name;
     private final int age;
-    private final Map<Long, Book> takenBooks = new HashMap<>();
+    private final Long id;
 
-    public User(String name, int age) {
+    public User(String name, int age, Long id) {
         this.name = name;
         this.age = age;
+        this.id = id;
     }
 
     public String getName() {
@@ -23,27 +22,27 @@ public final class User {
         return age;
     }
 
-    public Map<Long, Book> getTakenBooks() {
-        return takenBooks;
+    public Long getId() {
+        return id;
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        User user = (User) object;
+        User user = (User) o;
 
         if (age != user.age) return false;
         if (!Objects.equals(name, user.name)) return false;
-        return takenBooks.equals(user.takenBooks);
+        return Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + age;
-        result = 31 * result + takenBooks.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         return result;
     }
 

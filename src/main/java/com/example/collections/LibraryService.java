@@ -1,81 +1,72 @@
 package com.example.collections;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 public final class LibraryService {
 
-    private LibraryService() {}
+    private final Map<Long, User> userMap;
+    private final Map<Long, Book> bookMap;
+    private final Map<Long, Long> takenBooksMap;
+    private final Map<Long, Set<Long>> userTakenBooksMap;
 
-    public static List<Book> getAllBooks(LibraryData data) {
-
-        if (data.getBookInfo().values().isEmpty()) {
-            throw new RuntimeException("В библиотеке нет книг!");
-        }
-
-        return data.getBookInfo().values().stream().toList();
+    public LibraryService(List<Book> bookList, List<User> userList) {
+        userMap = userList.stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+        bookMap = bookList.stream()
+                .collect(Collectors.toMap(Book::getId, book -> book));
+        takenBooksMap = new HashMap<>();
+        userTakenBooksMap = new HashMap<>();
     }
 
-    public static List<Book> getAllAvailableBooks(LibraryData data) {
-
-        List<Book> availableBooks = data.getBookInfo().values().stream().filter(Book::isAvailable).toList();
-
-        if (availableBooks.isEmpty()) {
-            throw new RuntimeException("Нет доступных книг!");
-        }
-
-        return availableBooks;
+    public List<Book> getAllBooks() {
+        return new ArrayList<>(bookMap.values());
     }
 
-    public static List<Book> getUserBooks(Long userId, LibraryData data) {
-
-        if (!data.getUserInfo().containsKey(userId)) {
-            throw new IllegalArgumentException("Пользователя не существует!");
-        }
-
-        if (data.getUserInfo().get(userId).getTakenBooks().isEmpty()) {
-            throw new RuntimeException("У пользователя нет книг!");
-        }
-
-        return data.getUserInfo().get(userId).getTakenBooks().values().stream().toList();
+    public List<User> getAllUsers() {
+        return new ArrayList<>(userMap.values());
     }
 
-    public static boolean takeBook(Long userId, Long bookId, LibraryData data) {
-
-        if (!data.getUserInfo().containsKey(userId)) {
-            throw new IllegalArgumentException("Пользователя не существует!");
-        }
-
-        if (!data.getBookInfo().containsKey(bookId)) {
-            throw new IllegalArgumentException("Книги не существует!");
-        }
-
-        if (!data.getBookInfo().get(bookId).isAvailable()) {
-            return false;
-        }
-
-        data.getUserInfo().get(userId).getTakenBooks().put(bookId, data.getBookInfo().get(bookId));
-        data.getBookInfo().get(bookId).setAvailable(false);
-
-        return true;
+    public List<Book> getAllAvailableBooks() {
+        return bookMap.values().stream()
+                .filter(book -> !takenBooksMap.containsKey(book.getId())).toList();
     }
 
-    public static boolean returnBook(Long userId, Long bookId, LibraryData data) {
+    public List<Long> getUserBooks(Long userId) {
 
-        if (!data.getUserInfo().containsKey(userId)) {
-            throw new IllegalArgumentException("Пользователя не существует!");
+        if (!userMap.containsKey(userId)) {
+            throw new IllegalArgumentException("Пользователя не существует");
         }
 
-        if (!data.getBookInfo().containsKey(bookId)) {
-            throw new IllegalArgumentException("Книги не существует!");
+        return new ArrayList<>(userTakenBooksMap.get(userId));
+    }
+
+    public void takeBook(Long userId, Long bookId) {
+
+        if (!userMap.containsKey(userId) || !bookMap.containsKey(bookId)) {
+            throw new IllegalArgumentException("Пользователя или книги не существует");
         }
 
-        if (!data.getUserInfo().get(userId).getTakenBooks().containsKey(bookId)) {
-            return false;
+        takenBooksMap.put(bookId, userId);
+        userTakenBooksMap.computeIfAbsent(userId, map -> new HashSet<>()).add(bookId);
+    }
+
+    public void returnBook(Long userId, Long bookId) {
+
+        if (!userMap.containsKey(userId) || !bookMap.containsKey(bookId)) {
+            throw new IllegalArgumentException("Пользователя или книги не существует");
         }
 
-        data.getUserInfo().get(userId).getTakenBooks().remove(bookId);
-        data.getBookInfo().get(bookId).setAvailable(true);
+        if (!takenBooksMap.containsKey(bookId)) {
+            throw new IllegalArgumentException("Пользователь не брал данную книгу");
+        }
 
-        return true;
+        takenBooksMap.remove(bookId);
+        userTakenBooksMap.computeIfAbsent(userId, map -> new HashSet<>()).remove(bookId);
     }
 }
