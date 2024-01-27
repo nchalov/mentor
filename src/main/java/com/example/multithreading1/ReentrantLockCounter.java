@@ -13,13 +13,11 @@ public class ReentrantLockCounter implements SiteVisitCounter {
     }
 
     @Override
-    public void incrementVisitCount() {
+    public void incrementVisitCount() throws InterruptedException {
         lockCounter.lock();
         try {
             Thread.sleep(100);
             counter++;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         } finally {
             lockCounter.unlock();
         }

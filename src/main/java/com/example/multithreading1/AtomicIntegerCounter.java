@@ -11,17 +11,13 @@ public class AtomicIntegerCounter implements SiteVisitCounter {
     }
 
     @Override
-    public void incrementVisitCount() {
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+    public void incrementVisitCount() throws InterruptedException {
+        Thread.sleep(100);
         counter.incrementAndGet();
     }
 
     @Override
     public int getVisitCount() {
-        return 0;
+        return counter.get();
     }
 }

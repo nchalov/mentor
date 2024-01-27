@@ -9,13 +9,9 @@ public class SynchronizedBlockCounter implements SiteVisitCounter {
     }
 
     @Override
-    public void incrementVisitCount() {
+    public void incrementVisitCount() throws InterruptedException {
         synchronized (this) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            Thread.sleep(100);
             counter++;
         }
     }

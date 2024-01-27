@@ -21,7 +21,7 @@ public class MultithreadingSiteVisitor {
     public void visitMultithread(int numOfThreads) {
         startTime = System.currentTimeMillis();
         for (int i = 0; i < numOfThreads; i++) {
-           Thread thread = new Thread(siteVisitCounter::incrementVisitCount);
+           Thread thread = createThread();
            threadList.add(thread);
            thread.start();
         }
@@ -36,5 +36,15 @@ public class MultithreadingSiteVisitor {
 
     public long getTotalTimeOfHandling() {
         return (stopTime - startTime) / 1000;
+    }
+
+    private Thread createThread() {
+        return new Thread(() -> {
+            try {
+                siteVisitCounter.incrementVisitCount();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }
